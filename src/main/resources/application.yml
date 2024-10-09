@@ -1,0 +1,11 @@
+
+server:
+  port: 8088
+  servlet:
+    context-path: /api-mv
+
+spring:
+  application:
+    name: mathvideos
+  profiles:
+    active: local
