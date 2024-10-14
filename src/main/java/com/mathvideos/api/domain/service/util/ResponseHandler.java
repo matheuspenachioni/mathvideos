@@ -9,10 +9,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class ResponseHandler {
 	// HTTP 200 - OK
-	public ResponseEntity<Object> ok(String message) {
+	public ResponseEntity<Object> ok(String message, Object result) {
 		ResponseBody response = new ResponseBody();
 		response.setStatus(HttpStatus.OK.value());
 		response.setMessage(message);
+		response.setResult(result);
 
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
@@ -26,10 +27,11 @@ public class ResponseHandler {
 	}
 
 	// HTTP 201 - CREATED
-	public ResponseEntity<Object> created(String message) {
+	public ResponseEntity<Object> created(String message, Object result) {
 		ResponseBody response = new ResponseBody();
 		response.setStatus(HttpStatus.CREATED.value());
 		response.setMessage(message);
+		response.setResult(result);
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
