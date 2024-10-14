@@ -52,7 +52,7 @@ public class AccountService {
 			dto.setPassword(passwordEncoder.encode(dto.getPassword()));
 			accountRepository.save(dto.convertToUser());
 
-			return responseHandler.ok("Sua conta foi criada com sucesso");
+			return responseHandler.ok("Sua conta foi criada com sucesso", null);
 		} catch (Exception ex) {
 			logger.error("{} - Falha ao criar a conta do usuário", new Date());
 			logger.error(ex.getMessage());
@@ -84,7 +84,7 @@ public class AccountService {
 
 			accountRepository.saveAndFlush(dto.convertToUser());
 
-			return responseHandler.ok("Suas informações foram atualizadas com sucesso");
+			return responseHandler.ok("Suas informações foram atualizadas com sucesso", null);
 		} catch (Exception ex) {
 			logger.error("{} - Falha ao atualizar informações do usuário ({})", new Date(), dto.getId());
 			logger.error(ex.getMessage());
@@ -116,7 +116,7 @@ public class AccountService {
 			user.get().setPassword(passwordEncoder.encode(dto.getNewPassword()));
 			accountRepository.save(user.get());
 
-			return responseHandler.ok("Suas senha foi alterada com sucesso");
+			return responseHandler.ok("Suas senha foi alterada com sucesso", null);
 		} catch (Exception ex) {
 			logger.error("{} - Falha ao alterar senha do usuário ({})", new Date(), dto.getId());
 			logger.error(ex.getMessage());
