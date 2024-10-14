@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "mathvideos-87e44",
+  "private_key_id": "a6feb435b6a4bf48e26131fdb45cb1f855adb186",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCpkQLzwT6Mf2Iv\nncLlQ8ZfTprU9vPfv/sNJzEKg4gHQHTCd3X0jTqsCMAaHoyoMyLcyRgOM5OfCfTL\nCyY9iX0KoCcxWfEoYFd51lrFSmSo24ef+UsZGVAkdmVPmVZ1WY2ZZvYl8nFic1hv\nQuFpuPPxNbAkJD2lemOuWXnFulYfETu23G2CoXkVhTa8guBTyF4R6KwuFWvsuyKW\nUvGfGk1OsBNgshOW9FgfAlRSu+1+EEyctAfGjhLjKQ2Lsn4yqd7ZGNHVYs+y6wID\npF+8eKUwEJzY+HBUakzZT8lqR9UqnWxF8TdUKY1qITTxjpMcNGdwZXrBQYlFuDch\nRBt0yKQfAgMBAAECggEAJ4A7gtM6ofouwk7rDwOJ27vw/7mDuFT9w+OkXgGkF6Rh\nTsgLd2vLBjaHoc4KEEjRT0OdUfmb4wmrt/0h7GXx9h624p1EO5at6hkQTjN1XYy+\nfHrTjsZB0Cywjyl2ZaH2BY1hvBdNaJTcPhcDceB/G2rZXKIApmLrg7seTfyJgXTe\nBt9Zj7dzqWo5DIPUuz1SJKjDNFhhLCn/ATNDNX08apsNWJ4GLj3BrN8NLcw17Tge\n5KNibwHdhMl6bRIBN9eImBDQO/uVk2W1H85NYgC0dNQZga6m+EaHI8BTNf2S9p+V\nz2wEmFR6xhxolJI+8jsUr23pfK5lSvVQtfCZtfLD8QKBgQDdawMjVdNovBHZ+h5A\ng2VcxTXT4zEHWudH47nmR/tuFMZPz5OsXvyBG8L1mXVXxG/7QHsLn84OpAqaYQZ0\nhkfRQbv5YcmPfeZi1n4VMu+ho9Odwl2np8aE/FzDYphFaiORsRUsbJ8anF8mFwqK\n+rWOEhCHDqYr1iBiFdjk58PB1wKBgQDEDM+S3TB4VMp/tWqfhxveNECOIAGPkij7\ny3Xod3V/f8/XU0nJMNNwAw0H82vZMW8mzn5Az4AJgDaPF+Jphd7ijdTeAVfcvQ28\nJKhgKcD6d57vD8KysUa11STxbvKrKh+Id6+OaVvhpfsXgZ0buZDXwAv+tFYDHdI5\nf6JJIzh2+QKBgFU9c1HRIrg5Xu35ule/ve//A//0gNWCC3PDmberkoIIgWgMU5+S\nWcciduWyFFibiTjC1Bvfg6ZjRKm2HJQTdeZ7VfBl0wDoyR7X0GY827/wn/El+IQo\ntOZReSzG8jQW7maSM8KMdpv6Ay9Yw3hJmEd/cNltrE9H+eOI4Z0OFHC1AoGBAJpA\nKiG3fqdur1UD/DxAJaETI6evbwrzSOO0FbUuKHiEq5cTpP5zOCjtfZc/4x8kUfwK\nhDOiD29qPYMgm7fC6LcAOPfjvqmi5eeeQAxJTdjDvX0CvYGzEZuHdGWxkaUyo1TQ\nNoSqSOyll4XLKT3jJx9ZrxZb9UDGed1bmuhImeihAoGAYa3PPNHggsZN1nhC1p9d\nh6DCHbc+rGWxkC1eVjlB+NSwnKV65F/eTjD1DfyuVsrfpsOahgn3sZNyuwGD8yni\nyjW65fc62z1RiICjLkV2G1PzWahuw5rOUq/ncUVu7yHMSlBiiEvp7S2XID/84OAH\nUPdXvxQdynoPfiE1mTYykTI=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-he1og@mathvideos-87e44.iam.gserviceaccount.com",
+  "client_id": "101797457843399940428",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-he1og%40mathvideos-87e44.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
