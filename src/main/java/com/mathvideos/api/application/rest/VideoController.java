@@ -1,4 +1,4 @@
-package com.mathvideos.api.application;
+package com.mathvideos.api.application.rest;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mathvideos.api.application.dto.ChangeVideoVisibilityDTO;
 import com.mathvideos.api.application.dto.CreateVideoDTO;
+import com.mathvideos.api.application.dto.LikeDislikeDTO;
 import com.mathvideos.api.domain.service.VideoService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,16 +55,22 @@ public class VideoController {
 		return videoService.deleteVideo(id);
 	}
 	
-	@PostMapping("/{id}/like")
+	@PostMapping("/like")
 	@Operation(summary = "Adiciona um like ao vídeo")
-	private ResponseEntity<Object> likeVideo(@PathVariable(name = "id", required = true) String id) {
-		return videoService.likeVideo(id);
+	private ResponseEntity<Object> likeVideo(@RequestBody LikeDislikeDTO dto) {
+		return videoService.likeVideo(dto);
 	}
 	
-	@PostMapping("/{id}/dislike")
+	@PostMapping("/dislike")
 	@Operation(summary = "Adiciona um dislike ao vídeo")
-	private ResponseEntity<Object> dislikeVideo(@PathVariable(name = "id", required = true) String id) {
-		return videoService.dislikeVideo(id);
+	private ResponseEntity<Object> dislikeVideo(@RequestBody LikeDislikeDTO dto) {
+		return videoService.dislikeVideo(dto);
+	}
+	
+	@PostMapping("/{id}/view")
+	@Operation(summary = "Adiciona uma view ao vídeo")
+	private ResponseEntity<Object> viewVideo(@PathVariable(name = "id") String id) {
+		return videoService.viewVideo(id);
 	}
 	
 	@PostMapping("/change-visibility")
