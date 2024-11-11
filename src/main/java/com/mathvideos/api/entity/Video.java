@@ -9,6 +9,8 @@ import com.mathvideos.api.entity.enumerated.VideoVisibility;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -44,6 +46,10 @@ public class Video {
 	@Column(name = "visibility", nullable = false)
 	private VideoVisibility visibility;
 	
+	@ManyToOne
+	@JoinColumn(name = "author_id")
+	private User author;
+	
 	@Column(name = "created_on", updatable = false)
 	private LocalDateTime createdOn;
 	
@@ -53,9 +59,13 @@ public class Video {
 	public Video() {
 		
 	}
+	
+	public Video(String id) {
+		this.id = id;
+	}
 
 	public Video(String id, String title, String description, String videoUrl, String thumbnailUrl, AtomicInteger likes,
-			AtomicInteger dislikes, AtomicInteger views, VideoVisibility visibility, LocalDateTime createdOn, 
+			AtomicInteger dislikes, AtomicInteger views, VideoVisibility visibility, User author, LocalDateTime createdOn, 
 			LocalDateTime updatedOn) {
 		this.id = id;
 		this.title = title;
@@ -66,6 +76,7 @@ public class Video {
 		this.dislikes = dislikes;
 		this.views = views;
 		this.visibility = visibility;
+		this.author = author;
 		this.createdOn = createdOn;
 		this.updatedOn = updatedOn;
 	}
@@ -175,6 +186,14 @@ public class Video {
 
 	public void setVisibility(VideoVisibility visibility) {
 		this.visibility = visibility;
+	}
+
+	public User getAuthor() {
+		return author;
+	}
+
+	public void setAuthor(User author) {
+		this.author = author;
 	}
 
 	public LocalDateTime getCreatedOn() {

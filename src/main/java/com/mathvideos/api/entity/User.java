@@ -40,6 +40,10 @@ public class User {
 		
 	}
 	
+	public User(String id) {
+		this.id = id;
+	}
+	
 	public User(String id, String username, String displayName, String mail, String password, 
 			LocalDateTime createdOn, LocalDateTime updatedOn) {
 		this.id = id;
