@@ -15,8 +15,16 @@ import org.springframework.stereotype.Service;
 
 import com.mathvideos.api.application.dto.ChangeVideoVisibilityDTO;
 import com.mathvideos.api.application.dto.CreateVideoDTO;
+import com.mathvideos.api.application.dto.LikeDislikeDTO;
+import com.mathvideos.api.application.dto.ReturnLikesDislikesDTO;
+import com.mathvideos.api.application.dto.ReturnViewsDTO;
+import com.mathvideos.api.application.dto.VideoDTO;
+import com.mathvideos.api.domain.repository.AccountRepository;
+import com.mathvideos.api.domain.repository.UserVideoActionRepository;
 import com.mathvideos.api.domain.repository.VideoRepository;
 import com.mathvideos.api.domain.service.util.ResponseHandler;
+import com.mathvideos.api.entity.User;
+import com.mathvideos.api.entity.UserVideoAction;
 import com.mathvideos.api.entity.Video;
 import com.mathvideos.api.entity.enumerated.VideoVisibility;
 
@@ -25,12 +33,17 @@ public class VideoService {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
 	private final VideoRepository videoRepository;
+	private final UserVideoActionRepository userVideoActionRepository;
+	private final AccountRepository accountRepository;
 	private final FirebaseService firebaseService;
 	private final ResponseHandler responseHandler;
 
-	public VideoService(VideoRepository videoRepository, FirebaseService firebaseService, 
+	public VideoService(VideoRepository videoRepository, UserVideoActionRepository userVideoActionRepository,
+			AccountRepository accountRepository, FirebaseService firebaseService, 
 			ResponseHandler responseHandler) {
 		this.videoRepository = videoRepository;
+		this.userVideoActionRepository = userVideoActionRepository;
+		this.accountRepository = accountRepository;
 		this.firebaseService = firebaseService;
 		this.responseHandler = responseHandler;
 	}
@@ -43,14 +56,18 @@ public class VideoService {
 				return responseHandler.badRequest(messages);
 			}
 			
+			if (this.accountRepository.findById(dto.getAuthorId()).isEmpty()) {
+				return responseHandler.badRequest("Seu usuário não pôde ser encontrado");
+			}
+			
 			String id = videoRepository.save(dto.convertToVideo()).getId();
 			
-			return this.responseHandler.ok("Vídeo criado com sucesso", id);
+			return responseHandler.ok("Vídeo criado com sucesso", id);
 		} catch (Exception ex) {
 			logger.error("{} - Falha ao salvar vídeo", new Date());
 			logger.error(ex.getMessage());
 
-			return this.responseHandler.internalServerError("Ocorreu uma falha ao criar o vídeo");
+			return responseHandler.internalServerError("Ocorreu uma falha ao criar o vídeo");
 		}
 	}
 	
@@ -67,7 +84,7 @@ public class VideoService {
 			logger.error("{} - Falha ao recuperar os vídeos", new Date());
 			logger.error(ex.getMessage());
 
-			return this.responseHandler.internalServerError("Ocorreu uma falha ao recuperar os vídeos");
+			return responseHandler.internalServerError("Ocorreu uma falha ao recuperar os vídeos");
 		}
 	}
 	
@@ -83,60 +100,190 @@ public class VideoService {
 				return responseHandler.notFound("Nenhum vídeo foi encontrado");
 			}
 			
-			return this.responseHandler.ok("Vídeo retornado com sucesso", video.get());
+			return this.responseHandler.ok("Vídeo retornado com sucesso", new VideoDTO(video.get()));
 		} catch (Exception ex) {
 			logger.error("{} - Falha ao recuperar o vídeo ({})", new Date(), id);
 			logger.error(ex.getMessage());
 
-			return this.responseHandler.internalServerError("Ocorreu uma falha ao recuperar as informações do vídeo");
+			return responseHandler.internalServerError("Ocorreu uma falha ao recuperar as informações do vídeo");
 		}
 	}
 	
-	public ResponseEntity<Object> likeVideo(String id) {
+	public ResponseEntity<Object> likeVideo(LikeDislikeDTO dto) {
 		try {
-			if (id.isEmpty()) {
+			if (dto.getUserId().isEmpty()) {
+				return responseHandler.badRequest("É necessário estar logado para dar like");
+			}
+			if (dto.getVideoId().isEmpty()) {
 				return responseHandler.badRequest("É necessário informar o ID do vídeo");
 			}
+			if (accountRepository.findById(dto.getUserId()).isEmpty()) {
+				return responseHandler.badRequest("Seu usuário não pôde ser encontrado");
+			}
 			
-			Optional<Video> video = videoRepository.findById(id);
-			
+			Optional<Video> video = videoRepository.findById(dto.getVideoId());
 			if (video.isEmpty()) {
 				return responseHandler.notFound("Nenhum vídeo foi encontrado");
+			}
+			
+			Optional<UserVideoAction> action = userVideoActionRepository.getByUserIdAndVideoId(dto.getUserId(), dto.getVideoId());
+			
+			if (action.isPresent() && action.get().isLiked()) {
+				video.get().decrementLikes();
+				videoRepository.saveAndFlush(video.get());
+				
+				action.get().setLiked(false);
+				action.get().setDisliked(false);
+				userVideoActionRepository.saveAndFlush(action.get());
+				
+				return responseHandler.ok("Você removeu o like deste vídeo", 
+						new ReturnLikesDislikesDTO(video.get().getLikes(), video.get().getDislikes(),
+								action.get().isLiked(), action.get().isDisliked()));
+			}
+			
+			if (action.isPresent() && action.get().isDisliked()) {
+				video.get().incrementLikes();
+				video.get().decrementDislikes();
+				videoRepository.saveAndFlush(video.get());
+				
+				action.get().setLiked(true);
+				action.get().setDisliked(false);
+				userVideoActionRepository.saveAndFlush(action.get());
+				
+				return responseHandler.ok("Você deu like neste vídeo", 
+						new ReturnLikesDislikesDTO(video.get().getLikes(), video.get().getDislikes(),
+								action.get().isLiked(), action.get().isDisliked()));
+			}
+			
+			if (action.isPresent() && !action.get().isLiked() && !action.get().isDisliked()) {
+				video.get().incrementLikes();
+				videoRepository.saveAndFlush(video.get());
+				
+				action.get().setLiked(true);
+				action.get().setDisliked(false);
+				userVideoActionRepository.saveAndFlush(action.get());
+				
+				return responseHandler.ok("Você deu like neste vídeo", 
+						new ReturnLikesDislikesDTO(video.get().getLikes(), video.get().getDislikes(),
+								action.get().isLiked(), action.get().isDisliked()));
 			}
 			
 			video.get().incrementLikes();
 			videoRepository.saveAndFlush(video.get());
+
+			UserVideoAction newAction = new UserVideoAction(new User(dto.getUserId()), new Video(dto.getVideoId()), 
+					true, false);
+			userVideoActionRepository.saveAndFlush(newAction);
 			
-			return this.responseHandler.ok("Você deu like neste vídeo", null);
+			return responseHandler.ok("Você deu like neste vídeo", 
+					new ReturnLikesDislikesDTO(video.get().getLikes(), video.get().getDislikes(),
+							newAction.isLiked(), newAction.isDisliked()));
 		} catch (Exception ex) {
-			logger.error("{} - Falha ao dar like no vídeo ({})", new Date(), id);
+			logger.error("{} - Falha ao dar like no vídeo ({})", new Date(), dto.getVideoId());
 			logger.error(ex.getMessage());
 
-			return this.responseHandler.internalServerError("Ocorreu uma falha ao dar like no vídeo");
+			return responseHandler.internalServerError("Ocorreu uma falha ao dar like no vídeo");
 		}
 	}
 	
-	public ResponseEntity<Object> dislikeVideo(String id) {
+	public ResponseEntity<Object> dislikeVideo(LikeDislikeDTO dto) {
 		try {
-			if (id.isEmpty()) {
+			if (dto.getUserId().isEmpty()) {
+				return responseHandler.badRequest("É necessário estar logado para dar like");
+			}
+			if (dto.getVideoId().isEmpty()) {
+				return responseHandler.badRequest("É necessário informar o ID do vídeo");
+			}
+			if (accountRepository.findById(dto.getUserId()).isEmpty()) {
+				return responseHandler.badRequest("Seu usuário não pôde ser encontrado");
+			}
+			
+			Optional<Video> video = videoRepository.findById(dto.getVideoId());
+			if (video.isEmpty()) {
+				return responseHandler.notFound("Nenhum vídeo foi encontrado");
+			}
+
+			Optional<UserVideoAction> action = userVideoActionRepository.getByUserIdAndVideoId(dto.getUserId(), dto.getVideoId());
+			
+			if (action.isPresent() && action.get().isDisliked()) {
+				video.get().decrementDislikes();
+				videoRepository.saveAndFlush(video.get());
+				
+				action.get().setLiked(false);
+				action.get().setDisliked(false);
+				userVideoActionRepository.saveAndFlush(action.get());
+				
+				return responseHandler.ok("Você removeu o dislike deste vídeo", 
+						new ReturnLikesDislikesDTO(video.get().getLikes(), video.get().getDislikes(),
+								action.get().isLiked(), action.get().isDisliked()));
+			}
+			
+			if (action.isPresent() && action.get().isLiked()) {
+				video.get().incrementDislikes();
+				video.get().decrementLikes();
+				videoRepository.saveAndFlush(video.get());
+
+				action.get().setDisliked(true);
+				action.get().setLiked(false);
+				userVideoActionRepository.saveAndFlush(action.get());
+				
+				return responseHandler.ok("Você deu dislike neste vídeo", 
+						new ReturnLikesDislikesDTO(video.get().getLikes(), video.get().getDislikes(),
+								action.get().isLiked(), action.get().isDisliked()));
+			}
+			
+			if (action.isPresent() && !action.get().isLiked() && !action.get().isDisliked()) {
+				video.get().incrementDislikes();
+				videoRepository.saveAndFlush(video.get());
+				
+				action.get().setLiked(false);
+				action.get().setDisliked(true);
+				userVideoActionRepository.saveAndFlush(action.get());
+				
+				return responseHandler.ok("Você deu dislike neste vídeo", 
+						new ReturnLikesDislikesDTO(video.get().getLikes(), video.get().getDislikes(),
+								action.get().isLiked(), action.get().isDisliked()));
+			}
+			
+			video.get().incrementDislikes();
+			this.videoRepository.saveAndFlush(video.get());
+			
+			UserVideoAction newAction = new UserVideoAction(new User(dto.getUserId()), new Video(dto.getVideoId()), 
+					true, false);
+			this.userVideoActionRepository.saveAndFlush(newAction);
+			
+			return responseHandler.ok("Você deu dislike neste vídeo", 
+					new ReturnLikesDislikesDTO(video.get().getLikes(), video.get().getDislikes(),
+							newAction.isLiked(), newAction.isDisliked()));
+		} catch (Exception ex) {
+			logger.error("{} - Falha ao dar dislike no vídeo ({})", new Date(), dto.getVideoId());
+			logger.error(ex.getMessage());
+
+			return this.responseHandler.internalServerError("Ocorreu uma falha ao dar dislike no vídeo");
+		}
+	}
+	
+	public ResponseEntity<Object> viewVideo(String videoId) {
+		try {
+			if (videoId.isEmpty()) {
 				return responseHandler.badRequest("É necessário informar o ID do vídeo");
 			}
 			
-			Optional<Video> video = videoRepository.findById(id);
-			
+			Optional<Video> video = videoRepository.findById(videoId);
 			if (video.isEmpty()) {
 				return responseHandler.notFound("Nenhum vídeo foi encontrado");
 			}
 			
-			video.get().incrementDislikes();
+			video.get().incrementViews();
 			videoRepository.saveAndFlush(video.get());
 			
-			return this.responseHandler.ok("Você deu dislike neste vídeo", null);
+			return responseHandler.ok("Visualização contabilizada com sucesso", 
+					new ReturnViewsDTO(video.get().getViews()));
 		} catch (Exception ex) {
-			logger.error("{} - Falha ao dar dislike no vídeo ({})", new Date(), id);
+			logger.error("{} - Falha ao contabilizar visualização no vídeo ({})", new Date(), videoId);
 			logger.error(ex.getMessage());
 
-			return this.responseHandler.internalServerError("Ocorreu uma falha ao dar dislike no vídeo");
+			return this.responseHandler.internalServerError("Ocorreu ao contabilizar sua visualização neste vídeo");
 		}
 	}
 	
@@ -205,6 +352,9 @@ public class VideoService {
 		}
 		if (dto.getVisibility() == null || !Arrays.asList(VideoVisibility.values()).contains(dto.getVisibility())) {
 			messages.add("É necessário informar a visibilidade do vídeo");
+		}
+		if (dto.getAuthorId().isEmpty()) {
+			messages.add("É necessário estar lgoado para criar um vídeo");
 		}
 		
 		return !messages.isEmpty();
